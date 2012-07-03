@@ -20,58 +20,45 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+#include <err.h>
 #include <debug.h>
+#include <target.h>
 #include <compiler.h>
-#include <stm32f10x.h>
+#include <stm32f10x_usart.h>
+#include <stm32f10x_rcc.h>
+#include <stm32f10x_gpio.h>
+#include <stm32f10x_flash.h>
+#include <stm32f10x_dbgmcu.h>
 #include <platform/stm32.h>
-#include <target/debugconfig.h>
 
-extern void stm32_tim2_irq(void);
-extern void stm32_tim3_irq(void);
-extern void stm32_tim4_irq(void);
-extern void stm32_tim5_irq(void);
-extern void stm32_tim6_irq(void);
-extern void stm32_tim7_irq(void);
-
-void stm32_USART1_IRQ(void)
+void target_early_init(void)
 {
-	if (DEBUG_UART == USART1)
-		stm32_debug_rx_irq();
-	else
-		PANIC_UNIMPLEMENTED;
+	/* configure the usart3 pins */
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
+
+	//GPIO_PinRemapConfig(GPIO_FullRemap_USART3, ENABLE);
+
+	GPIO_InitTypeDef init;
+	init.GPIO_Pin = GPIO_Pin_9;
+	init.GPIO_Speed = GPIO_Speed_50MHz;
+	init.GPIO_Mode = GPIO_Mode_AF_PP;
+	GPIO_Init(GPIOA, &init);
+
+	init.GPIO_Pin = GPIO_Pin_10;
+	init.GPIO_Speed = GPIO_Speed_50MHz;
+	init.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+	GPIO_Init(GPIOA, &init);
+
+	stm32_debug_early_init();
 }
 
-void stm32_USART2_IRQ(void)
+void target_init(void)
 {
-	if (DEBUG_UART == USART2)
-		stm32_debug_rx_irq();
-	else
-		PANIC_UNIMPLEMENTED;
+	TRACE_ENTRY;
+
+	stm32_debug_init();
+
+	TRACE_EXIT;
 }
-
-void stm32_USART3_IRQ(void)
-{
-	if (DEBUG_UART == USART3)
-		stm32_debug_rx_irq();
-	else
-		PANIC_UNIMPLEMENTED;
-}
-
-/* appended to the end of the main vector table */
-const void * const __SECTION(".text.boot.vectab2") vectab2[] =
-{
-    [TIM2_IRQn] = stm32_tim2_irq,
-    [TIM3_IRQn] = stm32_tim3_irq,
-    [TIM4_IRQn] = stm32_tim4_irq,
-#if STM32F10X_CL || STM32F10X_HD
-    [TIM5_IRQn] = stm32_tim5_irq,
-    [TIM6_IRQn] = stm32_tim6_irq,
-    [TIM7_IRQn] = stm32_tim7_irq,
-#endif
-
-    [USART1_IRQn] = stm32_USART1_IRQ,
-    [USART2_IRQn] = stm32_USART2_IRQ,
-    [USART3_IRQn] = stm32_USART3_IRQ,
-    [NUM_IRQn] = 0,
-};
 
