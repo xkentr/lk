@@ -34,7 +34,7 @@ OUTBIN := $(BUILDDIR)/lk.bin
 OUTELF := $(BUILDDIR)/lk
 CONFIGHEADER := $(BUILDDIR)/config.h
 
-INCLUDES := -I$(BUILDDIR) -Iinclude
+INCLUDES := -I$(BUILDDIR) -Iinclude -Iinclude/libc
 CFLAGS := -O2 -g -fno-builtin -finline -W -Wall -Wno-multichar -Wno-unused-parameter -Wno-unused-function -include $(CONFIGHEADER)
 CFLAGS += -Werror-implicit-function-declaration
 #CFLAGS += -Werror
