@@ -41,6 +41,13 @@ extern int __bss_start;
 static int bootstrap2(void *arg);
 extern void __libc_init_array();
 
+static void libc_early_init()
+{
+    setvbuf(stdin, NULL, _IONBF, 0);
+    setvbuf(stdout, NULL, _IONBF, 0);
+    setvbuf(stderr, NULL, _IONBF, 0);
+}
+
 /* called from crt0.S */
 void kmain(void) __NO_RETURN __EXTERNALLY_VISIBLE;
 void kmain(void)
@@ -58,6 +65,9 @@ void kmain(void)
 
 	// do any super early target initialization
 	target_early_init();
+
+	// Do what we need to do to get newlib to work.
+	libc_early_init();
 
 	dprintf(INFO, "welcome to lk\n\n");
 	
