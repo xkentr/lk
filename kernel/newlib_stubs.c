@@ -59,6 +59,17 @@ caddr_t _sbrk(int incr) {
     return (caddr_t) prev_heap_end;
 }
 
+void __malloc_lock(struct _reent *_r)
+{
+	enter_critical_section();
+}
+
+
+void __malloc_unlock(struct _reent *_r)
+{
+	exit_critical_section();
+}
+
 void _exit(int status) {
     thread_exit(status);
 }
