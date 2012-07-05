@@ -92,6 +92,9 @@ endif
 THUMBCFLAGS :=
 THUMBINTERWORK :=
 ifeq ($(ENABLE_THUMB),true)
+# Danger: -mthumb with -mcpu=cortex-m3 implies thumb2
+# If you link with gcc and do not set that correctly, you get linked
+# with the wrong libc/libgcc and you are going to have a bad time.
 THUMBCFLAGS := -mthumb -D__thumb__
 THUMBINTERWORK := -mthumb-interwork
 endif
@@ -133,7 +136,7 @@ INCLUDES += \
 	-I$(LOCAL_DIR)/arm-m/CMSIS/CM3/CoreSupport
 
 DEFINES += \
-	ARCH_DEFAULT_STACK_SIZE=1024
+	ARCH_DEFAULT_STACK_SIZE=2048
 endif
 
 # set the default toolchain to arm elf and set a #define
@@ -144,7 +147,8 @@ ifeq ($(TOOLCHAIN_PREFIX),arm-none-linux-gnueabi-)
 THUMBINTERWORK:=
 endif
 
-CFLAGS += $(THUMBINTERWORK)
+CFLAGS += $(THUMBCFLAGS) $(THUMBINTERWORK)
+LDFLAGS += $(THUMBCFLAGS) $(THUMBINTERWORK) -mcpu=cortex-m3
 
 # make sure some bits were set up
 MEMVARS_SET := 0

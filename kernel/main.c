@@ -37,24 +37,9 @@
 extern void *__ctor_list;
 extern void *__ctor_end;
 extern int __bss_start;
-extern int _end;
 
 static int bootstrap2(void *arg);
-
-static void call_constructors(void)
-{
-	void **ctor;
-   
-	ctor = &__ctor_list;
-	while(ctor != &__ctor_end) {
-		void (*func)(void);
-
-		func = (void (*)())*ctor;
-
-		func();
-		ctor++;
-	}
-}
+extern void __libc_init_array();
 
 /* called from crt0.S */
 void kmain(void) __NO_RETURN __EXTERNALLY_VISIBLE;
@@ -76,14 +61,6 @@ void kmain(void)
 
 	dprintf(INFO, "welcome to lk\n\n");
 	
-	// deal with any static constructors
-	dprintf(SPEW, "calling constructors\n");
-	call_constructors();
-
-	// bring up the kernel heap
-	dprintf(SPEW, "initializing heap\n");
-	heap_init();
-
 	// initialize the threading system
 	dprintf(SPEW, "initializing threads\n");
 	thread_init();

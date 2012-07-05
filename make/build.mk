@@ -8,7 +8,7 @@ $(OUTBIN): $(OUTELF)
 
 $(OUTELF): $(ALLOBJS) $(LINKER_SCRIPT)
 	@echo linking $@
-	$(NOECHO)$(LD) $(LDFLAGS) -T $(LINKER_SCRIPT) $(ALLOBJS) $(LIBGCC) -o $@
+	$(NOECHO)$(LD) $(LDFLAGS) -T $(LINKER_SCRIPT) $(ALLOBJS) -o $@
 
 $(OUTELF).sym: $(OUTELF)
 	@echo generating symbols: $@

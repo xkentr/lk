@@ -29,6 +29,7 @@ extern unsigned int __data_start_rom, __data_start, __data_end;
 extern unsigned int __bss_start, __bss_end;
 
 extern void kmain(void) __NO_RETURN __EXTERNALLY_VISIBLE;
+extern void __libc_init_array();
 
 void _start(void)
 {
@@ -45,6 +46,9 @@ void _start(void)
 	unsigned int *bss = &__bss_start;
 	while (bss != &__bss_end)
 		*bss++ = 0;
+
+	/* Call static constructors, etc, via newlib. */
+	__libc_init_array();
 
 	kmain();
 }

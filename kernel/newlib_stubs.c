@@ -1,9 +1,5 @@
-/* 
-** Copyright 2004, Travis Geiselbrecht. All rights reserved.
-** Distributed under the terms of the NewOS License.
-*/
 /*
- * Copyright (c) 2008 Travis Geiselbrecht
+ * Copyright (c) 2012 Kent Ryhorchuk
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files
@@ -24,11 +20,45 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-#include <string.h>
 
-int
-strcoll(const char *s1, const char *s2)
-{
-	return strcmp(s1, s2);
+/* Newlib stubs that can be defined at the kernel level. */
+
+#include <errno.h>
+#include <sys/stat.h>
+#include <sys/times.h>
+#include <sys/unistd.h>
+
+#include <kernel/thread.h>
+
+#undef errno
+extern int errno;
+
+char *__env[1] = { 0 };
+char **environ = __env;
+
+int _write(int file, char *ptr, int len);
+extern unsigned int _end;
+extern unsigned int _end_of_ram;
+
+#define OOM_STR "Out of memory\n"
+caddr_t _sbrk(int incr) {
+    static caddr_t heap_end;
+    caddr_t prev_heap_end;
+
+    if (heap_end == 0)
+        heap_end = (caddr_t)&_end;
+
+    prev_heap_end = heap_end;
+    if (heap_end + incr > (caddr_t)&_end_of_ram) {
+        _write (STDERR_FILENO, OOM_STR, sizeof(OOM_STR)-1);
+	errno = ENOMEM;
+	return  (caddr_t) -1;
+    }
+
+    heap_end += incr;
+    return (caddr_t) prev_heap_end;
 }
 
+void _exit(int status) {
+    thread_exit(status);
+}

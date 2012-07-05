@@ -109,7 +109,7 @@ static enum handler_return threadload(struct timer *t, time_t now, void *arg)
 static int cmd_threadload(int argc, const cmd_args *argv)
 {
 	static bool showthreadload = false;
-	static timer_t tltimer;
+	static ktimer_t tltimer;
 
 	enter_critical_section();
 

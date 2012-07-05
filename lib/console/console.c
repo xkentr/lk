@@ -160,7 +160,9 @@ static void add_history(const char *line)
 	if (strcmp(line, history_line(last)) == 0)
 		return;
 
-	strlcpy(history_line(history_next), line, LINE_LEN);
+	char* hl = history_line(history_next);
+	strncpy(hl, line, LINE_LEN-1);
+	hl[LINE_LEN-1] = '\0';
 	history_next = ptrnext(history_next);
 }
 
@@ -230,19 +232,13 @@ static int read_debug_line(const char **outbuffer, void *cookie)
 	char *buffer = debug_buffer;
 
 	for (;;) {
-		char c;
+	        char c = getchar();
 
-		/* loop until we get a char */
-		if (getc(&c) < 0)
-			continue;
-
-//		TRACEF("c = 0x%hhx\n", c); 
-		
 		if (escape_level == 0) {
 			switch (c) {
 				case '\r':
 				case '\n':
-					putc('\n');
+					putchar('\n');
 					goto done;
 
 				case 0x7f: // backspace or delete
@@ -250,7 +246,7 @@ static int read_debug_line(const char **outbuffer, void *cookie)
 					if (pos > 0) {
 						pos--;
 						puts("\x1b[1D"); // move to the left one
-						putc(' ');
+						putchar(' ');
 						puts("\x1b[1D"); // move to the left one
 					}
 					break;
@@ -261,7 +257,7 @@ static int read_debug_line(const char **outbuffer, void *cookie)
 
 				default:
 					buffer[pos++] = c;
-					putc(c);
+					putchar(c);
 			}
 		} else if (escape_level == 1) {
 			// inside an escape, look for '['
@@ -275,13 +271,13 @@ static int read_debug_line(const char **outbuffer, void *cookie)
 			switch (c) {
 				case 67: // right arrow
 					buffer[pos++] = ' ';
-					putc(' ');
+					putchar(' ');
 					break;
 				case 68: // left arrow
 					if (pos > 0) {
 						pos--;
 						puts("\x1b[1D"); // move to the left one
-						putc(' ');
+						putchar(' ');
 						puts("\x1b[1D"); // move to the left one
 					}
 					break;
@@ -292,14 +288,18 @@ static int read_debug_line(const char **outbuffer, void *cookie)
 					while (pos > 0) {
 						pos--;
 						puts("\x1b[1D"); // move to the left one
-						putc(' ');
+						putchar(' ');
 						puts("\x1b[1D"); // move to the left one
 					}
 
-					if (c == 65)
-						strlcpy(buffer, prev_history(&history_cursor), LINE_LEN);
-					else
-						strlcpy(buffer, next_history(&history_cursor), LINE_LEN);
+					if (c == 65) {
+						strncpy(buffer, prev_history(&history_cursor), LINE_LEN-1);
+						buffer[LINE_LEN-1] = '\0';
+					} else {
+						strncpy(buffer, next_history(&history_cursor), LINE_LEN-1);
+						buffer[LINE_LEN-1] = '\0';
+					}
+
 					pos = strlen(buffer);
 					puts(buffer);
 					break;
@@ -512,7 +512,7 @@ static void convert_args(int argc, cmd_args *argv)
 	int i;
 
 	for (i = 0; i < argc; i++) {
-		argv[i].u = atoui(argv[i].str);
+		argv[i].u = strtoul(argv[i].str, 0, 0);
 		argv[i].i = atoi(argv[i].str);
 
 		if (!strcmp(argv[i].str, "true") || !strcmp(argv[i].str, "on")) {

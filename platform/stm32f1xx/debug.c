@@ -23,7 +23,7 @@
 #include <stdarg.h>
 #include <reg.h>
 #include <debug.h>
-#include <printf.h>
+#include <stdio.h>
 #include <lib/cbuf.h>
 #include <kernel/thread.h>
 #include <platform/debug.h>
@@ -89,19 +89,17 @@ void stm32_debug_rx_irq(void)
 	dec_critical_section();
 }
 
-void _dputc(char c)
+void stm32_debug_putc(char c)
 {
-	if (c == '\n') {
-		_dputc('\r');
-	}
-	while (USART_GetFlagStatus(DEBUG_UART, USART_FLAG_TXE) == 0)
-		;
+	if (c == '\n')
+		stm32_debug_putc('\r');
+
+	while (USART_GetFlagStatus(DEBUG_UART, USART_FLAG_TXE) == 0);
 	USART_SendData(DEBUG_UART, c);
-	while (USART_GetFlagStatus(DEBUG_UART, USART_FLAG_TC) == 0)
-		;
+	while (USART_GetFlagStatus(DEBUG_UART, USART_FLAG_TC) == 0);
 }
 
-int dgetc(char *c, bool wait)
+int stm32_debug_getc(char *c, bool wait)
 {
 	return cbuf_read(&debug_rx_buf, c, 1, wait);
 }

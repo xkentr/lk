@@ -23,7 +23,7 @@
 #include <compiler.h>
 #include <stdint.h>
 
-static uint8_t initial_stack[1024] __SECTION(".bss.initial_stack");
+static uint8_t initial_stack[2048] __SECTION(".bss.initial_stack");
 
 extern void _start(void);
 extern void _nmi(void);

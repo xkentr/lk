@@ -24,7 +24,7 @@
 #include <ctype.h>
 #include <debug.h>
 #include <stdlib.h>
-#include <printf.h>
+#include <stdio.h>
 #include <list.h>
 #include <string.h>
 #include <arch/ops.h>
@@ -52,47 +52,10 @@ void _panic(void *caller, const char *fmt, ...)
 
 	va_list ap;
 	va_start(ap, fmt);
-	_dvprintf(fmt, ap);
+	viprintf(fmt, ap);
 	va_end(ap);
 
 	halt();
-}
-
-int _dputs(const char *str)
-{
-	while(*str != 0) {
-		_dputc(*str++);
-	}
-
-	return 0;
-}
-
-static int _dprintf_output_func(char c, void *state)
-{
-	_dputc(c);
-
-	return INT_MAX;
-}
-
-int _dprintf(const char *fmt, ...)
-{
-	int err;
-
-	va_list ap;
-	va_start(ap, fmt);
-	err = _printf_engine(&_dprintf_output_func, NULL, fmt, ap);
-	va_end(ap);
-
-	return err;
-}
-
-int _dvprintf(const char *fmt, va_list ap)
-{
-	int err;
-
-	err = _printf_engine(&_dprintf_output_func, NULL, fmt, ap);
-
-	return err;
 }
 
 void hexdump(const void *ptr, size_t len)

@@ -34,8 +34,8 @@ OUTBIN := $(BUILDDIR)/lk.bin
 OUTELF := $(BUILDDIR)/lk
 CONFIGHEADER := $(BUILDDIR)/config.h
 
-INCLUDES := -I$(BUILDDIR) -Iinclude -Iinclude/libc
-CFLAGS := -O2 -g -fno-builtin -finline -W -Wall -Wno-multichar -Wno-unused-parameter -Wno-unused-function -include $(CONFIGHEADER)
+INCLUDES := -I$(BUILDDIR) -Iinclude
+CFLAGS := -O2 -g -finline -W -Wall -Wno-format -Wno-multichar -Wno-char-subscripts -Wno-unused-parameter -Wno-unused-function -nostartfiles -include $(CONFIGHEADER)
 CFLAGS += -Werror-implicit-function-declaration
 #CFLAGS += -Werror
 CPPFLAGS := -fno-exceptions -fno-rtti -fno-threadsafe-statics
@@ -44,7 +44,7 @@ ASMFLAGS := -DASSEMBLY
 LDFLAGS := 
 
 CFLAGS += -ffunction-sections -fdata-sections
-LDFLAGS += -gc-sections
+LDFLAGS += -gc-sections -Wl,-Map,$(OUTELF).map
 
 # top level rule
 all:: $(OUTBIN) $(OUTELF).lst $(OUTELF).debug.lst $(OUTELF).sym $(OUTELF).size
@@ -120,7 +120,7 @@ DEPS := $(ALLOBJS:%o=%d)
 # default to no ccache
 CCACHE ?= 
 CC := $(CCACHE) $(TOOLCHAIN_PREFIX)gcc
-LD := $(TOOLCHAIN_PREFIX)ld
+LD := $(TOOLCHAIN_PREFIX)gcc
 OBJDUMP := $(TOOLCHAIN_PREFIX)objdump
 OBJCOPY := $(TOOLCHAIN_PREFIX)objcopy
 CPPFILT := $(TOOLCHAIN_PREFIX)c++filt

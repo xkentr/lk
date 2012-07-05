@@ -51,7 +51,7 @@ static enum handler_return timer_tick(void *arg, time_t now);
 /**
  * @brief  Initialize a timer object
  */
-void timer_initialize(timer_t *timer)
+void timer_initialize(ktimer_t *timer)
 {
 	timer->magic = TIMER_MAGIC;
 	list_clear_node(&timer->node);
@@ -61,13 +61,13 @@ void timer_initialize(timer_t *timer)
 	timer->arg = 0;
 }
 
-static void insert_timer_in_queue(timer_t *timer)
+static void insert_timer_in_queue(ktimer_t *timer)
 {
-	timer_t *entry;
+	ktimer_t *entry;
 
 	LTRACEF("timer %p, scheduled %d, periodic %d\n", timer, timer->scheduled_time, timer->periodic_time);
 
-	list_for_every_entry(&timer_queue, entry, timer_t, node) {
+	list_for_every_entry(&timer_queue, entry, ktimer_t, node) {
 		if (TIME_GT(entry->scheduled_time, timer->scheduled_time)) {
 			list_add_before(&entry->node, &timer->node);
 			return;
@@ -78,7 +78,7 @@ static void insert_timer_in_queue(timer_t *timer)
 	list_add_tail(&timer_queue, &timer->node);
 }
 
-static void timer_set(timer_t *timer, time_t delay, time_t period, timer_callback callback, void *arg)
+static void timer_set(ktimer_t *timer, time_t delay, time_t period, timer_callback callback, void *arg)
 {
 	time_t now;
 
@@ -103,10 +103,10 @@ static void timer_set(timer_t *timer, time_t delay, time_t period, timer_callbac
 	insert_timer_in_queue(timer);
 
 #if PLATFORM_HAS_DYNAMIC_TIMER
-	if (list_peek_head_type(&timer_queue, timer_t, node) == timer) {
+	if (list_peek_head_type(&timer_queue, ktimer_t, node) == timer) {
 		/* we just modified the head of the timer queue */
 		LTRACEF("setting new timer for %u msecs\n", (uint)delay);
-		platform_set_oneshot_timer(timer_tick, NULL, delay);
+		platform_set_oneshot_timer(ktimer_tick, NULL, delay);
 	}
 #endif
 
@@ -127,7 +127,7 @@ static void timer_set(timer_t *timer, time_t delay, time_t period, timer_callbac
  * The timer function is declared as:
  *   enum handler_return callback(struct timer *, time_t now, void *arg) { ... }
  */
-void timer_set_oneshot(timer_t *timer, time_t delay, timer_callback callback, void *arg)
+void timer_set_oneshot(ktimer_t *timer, time_t delay, timer_callback callback, void *arg)
 {
 	if (delay == 0)
 		delay = 1;
@@ -148,7 +148,7 @@ void timer_set_oneshot(timer_t *timer, time_t delay, timer_callback callback, vo
  * The timer function is declared as:
  *   enum handler_return callback(struct timer *, time_t now, void *arg) { ... }
  */
-void timer_set_periodic(timer_t *timer, time_t period, timer_callback callback, void *arg)
+void timer_set_periodic(ktimer_t *timer, time_t period, timer_callback callback, void *arg)
 {
 	if (period == 0)
 		period = 1;
@@ -158,14 +158,14 @@ void timer_set_periodic(timer_t *timer, time_t period, timer_callback callback, 
 /**
  * @brief  Cancel a pending timer
  */
-void timer_cancel(timer_t *timer)
+void timer_cancel(ktimer_t *timer)
 {
 	DEBUG_ASSERT(timer->magic == TIMER_MAGIC);
 
 	enter_critical_section();
 
 #if PLATFORM_HAS_DYNAMIC_TIMER
-	timer_t *oldhead = list_peek_head_type(&timer_queue, timer_t, node);
+	ktimer_t *oldhead = list_peek_head_type(&timer_queue, ktimer_t, node);
 #endif
 
 	if (list_in_list(&timer->node))
@@ -180,7 +180,7 @@ void timer_cancel(timer_t *timer)
 
 #if PLATFORM_HAS_DYNAMIC_TIMER
 	/* see if we've just modified the head of the timer queue */
-	timer_t *newhead = list_peek_head_type(&timer_queue, timer_t, node);
+	ktimer_t *newhead = list_peek_head_type(&timer_queue, ktimer_t, node);
 	if (newhead == NULL) {
 		LTRACEF("clearing old hw timer, nothing in the queue\n");
 		platform_stop_timer();
@@ -204,7 +204,7 @@ void timer_cancel(timer_t *timer)
 /* called at interrupt time to process any pending timers */
 static enum handler_return timer_tick(void *arg, time_t now)
 {
-	timer_t *timer;
+	ktimer_t *timer;
 	enum handler_return ret = INT_NO_RESCHEDULE;
 
 	THREAD_STATS_INC(timer_ints);
@@ -213,7 +213,7 @@ static enum handler_return timer_tick(void *arg, time_t now)
 
 	for (;;) {
 		/* see if there's an event to process */
-		timer = list_peek_head_type(&timer_queue, timer_t, node);
+		timer = list_peek_head_type(&timer_queue, ktimer_t, node);
 		if (likely(timer == 0))
 			break;
 		LTRACEF("next item on timer queue %p at %d now %d (%p, arg %p)\n", timer, timer->scheduled_time, now, timer->callback, timer->arg);
@@ -247,7 +247,7 @@ static enum handler_return timer_tick(void *arg, time_t now)
 
 #if PLATFORM_HAS_DYNAMIC_TIMER
 	/* reset the timer to the next event */
-	timer = list_peek_head_type(&timer_queue, timer_t, node);
+	timer = list_peek_head_type(&timer_queue, ktimer_t, node);
 	if (timer) {
 		/* has to be the case or it would have fired already */
 		ASSERT(TIME_GT(timer->scheduled_time, now));

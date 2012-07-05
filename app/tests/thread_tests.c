@@ -21,13 +21,13 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 #include <debug.h>
-#include <rand.h>
 #include <err.h>
 #include <app/tests.h>
 #include <kernel/thread.h>
 #include <kernel/mutex.h>
 #include <kernel/event.h>
 #include <platform.h>
+#include <stdlib.h>
 
 static int sleep_thread(void *arg)
 {

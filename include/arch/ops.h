@@ -27,6 +27,7 @@
 
 #include <sys/types.h>
 #include <compiler.h>
+#include <lktypes.h>
 
 #if defined(__cplusplus)
 extern "C" {

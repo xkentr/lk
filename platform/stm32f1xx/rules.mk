@@ -30,6 +30,7 @@ OBJS += \
 	$(LOCAL_DIR)/debug.o \
 	$(LOCAL_DIR)/timer.o \
 	$(LOCAL_DIR)/vectab.o \
+	$(LOCAL_DIR)/newlib_stubs.o \
 
 #	$(LOCAL_DIR)/debug.o \
 	$(LOCAL_DIR)/interrupts.o \

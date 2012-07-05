@@ -1,9 +1,5 @@
 /*
-** Copyright 2001, Travis Geiselbrecht. All rights reserved.
-** Distributed under the terms of the NewOS License.
-*/
-/*
- * Copyright (c) 2008 Travis Geiselbrecht
+ * Copyright (c) 2012 Kent Ryhorchuk
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files
@@ -24,46 +20,43 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-#include <string.h>
-#include <sys/types.h>
+#ifndef __LKTYPES_H
+#define __LKTYPES_H
 
+#include <stdint.h>
+#include <limits.h>
 
-#if !_ASM_MEMCPY
+#ifndef __cplusplus
+typedef int bool;
+#define TRUE 1
+#define true 1
+#define FALSE 0
+#define false 0
+#endif
 
-typedef long word;
+typedef unsigned long long bigtime_t;
+#define INFINITE_TIME ULONG_MAX
 
-#define lsize sizeof(word)
-#define lmask (lsize - 1)
+typedef int status_t;
 
-void *memcpy(void *dest, const void *src, size_t count)
-{
-	char *d = (char *)dest;
-	const char *s = (const char *)src;
-	int len;
+typedef uintptr_t addr_t;
+typedef uintptr_t vaddr_t;
+typedef uintptr_t paddr_t;
 
-	if(count == 0 || dest == src)
-		return dest;
+enum handler_return {
+	INT_NO_RESCHEDULE = 0,
+	INT_RESCHEDULE,
+};
 
-	if(((long)d | (long)s) & lmask) {
-		// src and/or dest do not align on word boundary
-		if((((long)d ^ (long)s) & lmask) || (count < lsize))
-			len = count; // copy the rest of the buffer with the byte mover
-		else
-			len = lsize - ((long)d & lmask); // move the ptrs up to a word boundary
+#define MIN(a, b) (((a) < (b)) ? (a) : (b))
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
 
-		count -= len;
-		for(; len > 0; len--)
-			*d++ = *s++;
-	}
-	for(len = count / lsize; len > 0; len--) {
-		*(word *)d = *(word *)s;
-		d += lsize;
-		s += lsize;
-	}
-	for(len = count & lmask; len > 0; len--)
-		*d++ = *s++;
+#define ROUNDUP(a, b) (((a) + ((b)-1)) & ~((b)-1))
+#define ROUNDDOWN(a, b) ((a) & ~((b)-1))
 
-	return dest;
-}
+#define TIME_GTE(a, b) ((long)((a) - (b)) >= 0)
+#define TIME_LTE(a, b) ((long)((a) - (b)) <= 0)
+#define TIME_GT(a, b) ((long)((a) - (b)) > 0)
+#define TIME_LT(a, b) ((long)((a) - (b)) < 0)
 
 #endif

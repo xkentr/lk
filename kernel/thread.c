@@ -74,7 +74,7 @@ static void idle_thread_routine(void) __NO_RETURN;
 
 #if PLATFORM_HAS_DYNAMIC_TIMER
 /* preemption timer */
-static timer_t preempt_timer;
+static ktimer_t preempt_timer;
 #endif
 
 /* run queue manipulation */
@@ -108,7 +108,7 @@ static void init_thread_struct(thread_t *t, const char *name)
 {
 	memset(t, 0, sizeof(thread_t));
 	t->magic = THREAD_MAGIC;
-	strlcpy(t->name, name, sizeof(t->name));
+	strncpy(t->name, name, sizeof(t->name)-1);
 }
 
 /**
@@ -482,7 +482,7 @@ enum handler_return thread_timer_tick(void)
 }
 
 /* timer callback to wake up a sleeping thread */
-static enum handler_return thread_sleep_handler(timer_t *timer, time_t now, void *arg)
+static enum handler_return thread_sleep_handler(ktimer_t *timer, time_t now, void *arg)
 {
 	thread_t *t = (thread_t *)arg;
 
@@ -509,7 +509,7 @@ static enum handler_return thread_sleep_handler(timer_t *timer, time_t now, void
  */
 void thread_sleep(time_t delay)
 {
-	timer_t timer;
+	ktimer_t timer;
 
 #if THREAD_CHECKS
 	ASSERT(current_thread->magic == THREAD_MAGIC);
@@ -570,7 +570,8 @@ void thread_init(void)
  */
 void thread_set_name(const char *name)
 {
-	strlcpy(current_thread->name, name, sizeof(current_thread->name));
+	strncpy(current_thread->name, name, sizeof(current_thread->name)-1);
+	current_thread->name[sizeof(current_thread->name)-1] = '\0';
 }
 
 /**
@@ -658,7 +659,7 @@ void wait_queue_init(wait_queue_t *wait)
 	wait->count = 0;
 }
 
-static enum handler_return wait_queue_timeout_handler(timer_t *timer, time_t now, void *arg)
+static enum handler_return wait_queue_timeout_handler(ktimer_t *timer, time_t now, void *arg)
 {
 	thread_t *thread = (thread_t *)arg;
 
@@ -692,7 +693,7 @@ static enum handler_return wait_queue_timeout_handler(timer_t *timer, time_t now
  */
 status_t wait_queue_block(wait_queue_t *wait, time_t timeout)
 {
-	timer_t timer;
+	ktimer_t timer;
 
 #if THREAD_CHECKS
 	ASSERT(wait->magic == WAIT_QUEUE_MAGIC);
