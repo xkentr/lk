@@ -24,6 +24,10 @@
 #include <debug.h>
 #include <string.h>
 
+#define printf iprintf
+#define sprintf siprintf
+#define snprintf sniprintf
+
 void printf_tests(void)
 {
 	printf("printf tests\n");

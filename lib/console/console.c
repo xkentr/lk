@@ -43,6 +43,8 @@
 
 #define LOCAL_TRACE 0
 
+#define printf iprintf
+
 /* debug buffer */
 static char *debug_buffer;
 
@@ -133,12 +135,12 @@ static inline uint ptrprev(uint ptr)
 
 static void dump_history(void)
 {
-	iprintf("command history:\n");
+	printf("command history:\n");
 	uint ptr = ptrprev(history_next);
 	int i;
 	for (i=0; i < HISTORY_LEN; i++) {
 		if (history_line(ptr)[0] != 0)
-			iprintf("\t%s\n", history_line(ptr));
+			printf("\t%s\n", history_line(ptr));
 		ptr = ptrprev(ptr);
 	}
 }
@@ -560,7 +562,7 @@ static void command_loop(int (*get_line)(const char **, void *), void *get_line_
 		int argc = tokenize_command(buffer, &continuebuffer, outbuf, outbuflen, args, 16);
 		if (argc < 0) {
 			if (showprompt)
-				iprintf("syntax error\n");
+				printf("syntax error\n");
 			continue;
 		} else if (argc == 0) {
 			continue;
@@ -577,7 +579,7 @@ static void command_loop(int (*get_line)(const char **, void *), void *get_line_
 		const cmd *command = match_command(args[0].str);
 		if (!command) {
 			if (showprompt)
-				iprintf("command not found\n");
+				printf("command not found\n");
 			continue;
 		}
 
@@ -592,9 +594,9 @@ static void command_loop(int (*get_line)(const char **, void *), void *get_line_
 			(report_result))
 		{
 			if (lastresult < 0)
-				iprintf("FAIL %d\n", lastresult);
+				printf("FAIL %d\n", lastresult);
 			else
-				iprintf("PASS %d\n", lastresult);
+				printf("PASS %d\n", lastresult);
 		}
 #endif
 
@@ -710,7 +712,7 @@ void console_register_commands(cmd_block *block)
 static int cmd_help(int argc, const cmd_args *argv)
 {
 
-	iprintf("command list:\n");
+	printf("command list:\n");
 	
 	cmd_block *block;
 	size_t i;
@@ -719,7 +721,7 @@ static int cmd_help(int argc, const cmd_args *argv)
 		const cmd *curr_cmd = block->list;
 		for (i = 0; i < block->count; i++) {
 			if (curr_cmd[i].help_str)
-				iprintf("\t%-16s: %s\n", curr_cmd[i].cmd_str, curr_cmd[i].help_str);
+				printf("\t%-16s: %s\n", curr_cmd[i].cmd_str, curr_cmd[i].help_str);
 		}
 	}
 
@@ -731,9 +733,9 @@ static int cmd_test(int argc, const cmd_args *argv)
 {
 	int i;
 
-	iprintf("argc %d, argv %p\n", argc, argv);
+	printf("argc %d, argv %p\n", argc, argv);
 	for (i = 0; i < argc; i++)
-		iprintf("\t%d: str '%s', i %d, u %#x, b %d\n", i, argv[i].str, argv[i].i, argv[i].u, argv[i].b);
+		printf("\t%d: str '%s', i %d, u %#x, b %d\n", i, argv[i].str, argv[i].i, argv[i].u, argv[i].b);
 
 	return 0;
 }

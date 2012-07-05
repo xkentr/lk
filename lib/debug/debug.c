@@ -32,6 +32,9 @@
 #include <platform/debug.h>
 #include <kernel/thread.h>
 
+// Replace printf with iprintf here, no code in here uses FP.
+#define printf iprintf
+
 void spin(uint32_t usecs)
 {
 	bigtime_t start = current_time_hires();
