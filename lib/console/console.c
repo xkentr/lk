@@ -133,12 +133,12 @@ static inline uint ptrprev(uint ptr)
 
 static void dump_history(void)
 {
-	printf("command history:\n");
+	iprintf("command history:\n");
 	uint ptr = ptrprev(history_next);
 	int i;
 	for (i=0; i < HISTORY_LEN; i++) {
 		if (history_line(ptr)[0] != 0)
-			printf("\t%s\n", history_line(ptr));
+			iprintf("\t%s\n", history_line(ptr));
 		ptr = ptrprev(ptr);
 	}
 }
@@ -245,9 +245,9 @@ static int read_debug_line(const char **outbuffer, void *cookie)
 				case 0x8:
 					if (pos > 0) {
 						pos--;
-						puts("\x1b[1D"); // move to the left one
+						fputs("\x1b[1D", stdout); // move to the left one
 						putchar(' ');
-						puts("\x1b[1D"); // move to the left one
+						fputs("\x1b[1D", stdout); // move to the left one
 					}
 					break;
 
@@ -276,9 +276,9 @@ static int read_debug_line(const char **outbuffer, void *cookie)
 				case 68: // left arrow
 					if (pos > 0) {
 						pos--;
-						puts("\x1b[1D"); // move to the left one
+						fputs("\x1b[1D", stdout); // move to the left one
 						putchar(' ');
-						puts("\x1b[1D"); // move to the left one
+						fputs("\x1b[1D", stdout); // move to the left one
 					}
 					break;
 #if CONSOLE_ENABLE_HISTORY
@@ -287,9 +287,9 @@ static int read_debug_line(const char **outbuffer, void *cookie)
 					// wipe out the current line
 					while (pos > 0) {
 						pos--;
-						puts("\x1b[1D"); // move to the left one
+						fputs("\x1b[1D", stdout); // move to the left one
 						putchar(' ');
-						puts("\x1b[1D"); // move to the left one
+						fputs("\x1b[1D", stdout); // move to the left one
 					}
 
 					if (c == 65) {
@@ -301,7 +301,7 @@ static int read_debug_line(const char **outbuffer, void *cookie)
 					}
 
 					pos = strlen(buffer);
-					puts(buffer);
+					fputs(buffer, stdout);
 					break;
 #endif
 				default:
@@ -312,7 +312,7 @@ static int read_debug_line(const char **outbuffer, void *cookie)
 
 		/* end of line. */
 		if (pos == (LINE_LEN - 1)) {
-			puts("\nerror: line too long\n");
+			fputs("\nerror: line too long\n", stdout);
 			pos = 0;
 			goto done;
 		}
@@ -543,7 +543,7 @@ static void command_loop(int (*get_line)(const char **, void *), void *get_line_
 		// read a new line if it hadn't been split previously and passed back from tokenize_command
 		if (continuebuffer == NULL) {
 			if (showprompt)
-				puts("] ");
+				fputs("] ", stdout);
 
 			int len = get_line(&buffer, get_line_cookie);
 			if (len < 0)
@@ -560,7 +560,7 @@ static void command_loop(int (*get_line)(const char **, void *), void *get_line_
 		int argc = tokenize_command(buffer, &continuebuffer, outbuf, outbuflen, args, 16);
 		if (argc < 0) {
 			if (showprompt)
-				printf("syntax error\n");
+				iprintf("syntax error\n");
 			continue;
 		} else if (argc == 0) {
 			continue;
@@ -577,7 +577,7 @@ static void command_loop(int (*get_line)(const char **, void *), void *get_line_
 		const cmd *command = match_command(args[0].str);
 		if (!command) {
 			if (showprompt)
-				printf("command not found\n");
+				iprintf("command not found\n");
 			continue;
 		}
 
@@ -592,9 +592,9 @@ static void command_loop(int (*get_line)(const char **, void *), void *get_line_
 			(report_result))
 		{
 			if (lastresult < 0)
-				printf("FAIL %d\n", lastresult);
+				iprintf("FAIL %d\n", lastresult);
 			else
-				printf("PASS %d\n", lastresult);
+				iprintf("PASS %d\n", lastresult);
 		}
 #endif
 
@@ -710,7 +710,7 @@ void console_register_commands(cmd_block *block)
 static int cmd_help(int argc, const cmd_args *argv)
 {
 
-	printf("command list:\n");
+	iprintf("command list:\n");
 	
 	cmd_block *block;
 	size_t i;
@@ -719,7 +719,7 @@ static int cmd_help(int argc, const cmd_args *argv)
 		const cmd *curr_cmd = block->list;
 		for (i = 0; i < block->count; i++) {
 			if (curr_cmd[i].help_str)
-				printf("\t%-16s: %s\n", curr_cmd[i].cmd_str, curr_cmd[i].help_str);
+				iprintf("\t%-16s: %s\n", curr_cmd[i].cmd_str, curr_cmd[i].help_str);
 		}
 	}
 
@@ -731,9 +731,9 @@ static int cmd_test(int argc, const cmd_args *argv)
 {
 	int i;
 
-	printf("argc %d, argv %p\n", argc, argv);
+	iprintf("argc %d, argv %p\n", argc, argv);
 	for (i = 0; i < argc; i++)
-		printf("\t%d: str '%s', i %d, u %#x, b %d\n", i, argv[i].str, argv[i].i, argv[i].u, argv[i].b);
+		iprintf("\t%d: str '%s', i %d, u %#x, b %d\n", i, argv[i].str, argv[i].i, argv[i].u, argv[i].b);
 
 	return 0;
 }
