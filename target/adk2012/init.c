@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 Corey Tabaka
+ * Copyright (c) 2012 Travis Geiselbrecht
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files
@@ -20,12 +20,16 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-#ifndef __PLATFORM_P_H
-#define __PLATFORM_P_H
+#include <err.h>
+#include <debug.h>
+#include <target.h>
+#include <compiler.h>
 
-void platform_init_interrupts(void);
-void platform_init_timer(void);
-void platform_init_uart(void);
+void target_early_init(void)
+{
+}
 
-#endif
+void target_init(void)
+{
+}
 

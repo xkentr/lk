@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 Corey Tabaka
+ * Copyright (c) 2012 Travis Geiselbrecht
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files
@@ -20,12 +20,12 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-#ifndef __PLATFORM_P_H
-#define __PLATFORM_P_H
+#ifndef __TARGET_DEBUGCONFIG_H
+#define __TARGET_DEBUGCONFIG_H
 
-void platform_init_interrupts(void);
-void platform_init_timer(void);
-void platform_init_uart(void);
+//#include <stm32f10x_usart.h>
+
+//#define DEBUG_UART USART3
+//#define DEBUG_UART_IRQ USART3_IRQn
 
 #endif
-

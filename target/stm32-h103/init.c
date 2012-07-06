@@ -33,11 +33,9 @@
 
 void target_early_init(void)
 {
-	/* configure the usart3 pins */
+	/* configure the usa1t3 pins */
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
-
-	//GPIO_PinRemapConfig(GPIO_FullRemap_USART3, ENABLE);
 
 	GPIO_InitTypeDef init;
 	init.GPIO_Pin = GPIO_Pin_9;

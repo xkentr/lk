@@ -1,10 +1,10 @@
 LOCAL_DIR := $(GET_LOCAL_DIR)
 
-STM32_CHIP := stm32f103_hd
-
-PLATFORM := stm32f1xx
+SAM_CHIP := sam3x8h
+PLATFORM := sam3
 
 INCLUDES += -I$(LOCAL_DIR)/include
 
-OBJS += 
+OBJS += \
+	$(LOCAL_DIR)/init.o
 
