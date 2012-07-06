@@ -37,5 +37,7 @@ static void shell_entry(const struct app_descriptor *app, void *args)
 APP_START(shell)
 	.init = shell_init,
 	.entry = shell_entry,
+	.flags = APP_FLAG_CUSTOM_STACK_SIZE,
+	.stack_size = 4096,
 APP_END
 
