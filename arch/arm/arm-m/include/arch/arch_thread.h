@@ -23,10 +23,19 @@
 #ifndef __ARM_M_ARCH_THREAD_H
 #define __ARM_M_ARCH_THREAD_H
 
+#include <lktypes.h>
+
 struct arch_thread {
 	vaddr_t sp;
 	bool was_preempted;
 };
+
+#define ARM_M_INITIAL_STACK_SIZE ARCH_DEFAULT_STACK_SIZE
+extern uint8_t arm_m_initial_stack[];
+
+#define THREAD_HAVE_INITIAL_STACK
+#define THREAD_INITIAL_STACK_ADDR arm_m_initial_stack
+#define THREAD_INITIAL_STACK_SIZE ARM_M_INITIAL_STACK_SIZE
 
 #endif
 

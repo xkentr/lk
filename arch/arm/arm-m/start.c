@@ -23,6 +23,8 @@
 #include <debug.h>
 #include <compiler.h>
 #include <stdint.h>
+#include <arch/arch_thread.h>
+#include <kernel/thread.h>
 
 /* externals */
 extern unsigned int __data_start_rom, __data_start, __data_end;
@@ -46,6 +48,10 @@ void _start(void)
 	unsigned int *bss = &__bss_start;
 	while (bss != &__bss_end)
 		*bss++ = 0;
+
+	/* Fill half the stack with STACK_FILL so we can high-water mark. */
+	for (int i = 0; i < ARM_M_INITIAL_STACK_SIZE/2; i++)
+		arm_m_initial_stack[i] = THREAD_STACK_FILL;
 
 	/* Call static constructors, etc, via newlib. */
 	__libc_init_array();

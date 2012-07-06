@@ -22,8 +22,9 @@
  */
 #include <compiler.h>
 #include <stdint.h>
+#include <arch/arch_thread.h>
 
-static uint8_t initial_stack[2048] __SECTION(".bss.initial_stack");
+uint8_t arm_m_initial_stack[ARM_M_INITIAL_STACK_SIZE] __SECTION(".bss.initial_stack");
 
 extern void _start(void);
 extern void _nmi(void);
@@ -39,7 +40,7 @@ extern void _systick(void);
 const void * const __SECTION(".text.boot.vectab1") vectab[] =
 {
 	/* arm exceptions */
-	initial_stack + sizeof(initial_stack),
+	arm_m_initial_stack + sizeof(arm_m_initial_stack),
 	_start,
 	_nmi, // nmi
 	_hardfault, // hard fault

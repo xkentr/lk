@@ -49,6 +49,10 @@ enum thread_tls_list {
 
 #define THREAD_MAGIC 'thrd'
 
+/* Stacks filled with this char can have their
+   high-water level measured. The idle thread must be filled by _start. */
+#define THREAD_STACK_FILL 0xa5
+
 typedef struct thread {
 	int magic;
 	struct list_node thread_list_node;

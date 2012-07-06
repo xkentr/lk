@@ -163,6 +163,10 @@ thread_t *thread_create(const char *name, thread_start_routine entry, void *arg,
 		return NULL;
 	}
 
+#if DEBUGLEVEL > 1
+	/* Pave the stack with a test pattern so we can check high water mark. */
+	memset(t->stack, THREAD_STACK_FILL, stack_size);
+#endif
 	t->stack_size = stack_size;
 
 	/* inheirit thread local storage from the parent */
@@ -549,6 +553,13 @@ void thread_init_early(void)
 	t->priority = HIGHEST_PRIORITY;
 	t->state = THREAD_RUNNING;
 	t->saved_critical_section_count = 1;
+
+	/* fill in intial stack info if we have it */
+#ifdef THREAD_HAVE_INITIAL_STACK
+	t->stack = THREAD_INITIAL_STACK_ADDR;
+	t->stack_size = THREAD_INITIAL_STACK_SIZE;
+#endif
+
 	list_add_head(&thread_list, &t->thread_list_node);
 	current_thread = t;
 }
@@ -609,6 +620,18 @@ void thread_become_idle(void)
 	idle_thread_routine();
 }
 
+#if DEBUGLEVEL > 1
+static int thread_stack_consumed(thread_t *t) {
+	char* i = t->stack;
+	char* stack_base = i + (t->stack_size-1);
+	for (; i != stack_base; i++)
+		if (*i != THREAD_STACK_FILL)
+			break;
+
+	return (stack_base-i)+1;
+}
+#endif
+
 /**
  * @brief  Dump debugging info about the specified thread.
  */
@@ -616,7 +639,12 @@ void dump_thread(thread_t *t)
 {
 	dprintf(INFO, "dump_thread: t %p (%s)\n", t, t->name);
 	dprintf(INFO, "\tstate %d, priority %d, remaining quantum %d, critical section %d\n", t->state, t->priority, t->remaining_quantum, t->saved_critical_section_count);
+#if DEBUGLEVEL > 1
+	dprintf(INFO, "\tstack %p, stack_size %d, used %d\n", t->stack, t->stack_size,
+			thread_stack_consumed(t));
+#else
 	dprintf(INFO, "\tstack %p, stack_size %d\n", t->stack, t->stack_size);
+#endif
 	dprintf(INFO, "\tentry %p, arg %p\n", t->entry, t->arg);
 	dprintf(INFO, "\twait queue %p, wait queue ret %d\n", t->blocking_wait_queue, t->wait_queue_block_ret);
 	dprintf(INFO, "\ttls:");
