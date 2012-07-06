@@ -39,10 +39,10 @@ char **environ = __env;
 int _write(int file, char *ptr, int len);
 extern unsigned int _end;
 extern unsigned int _end_of_ram;
+caddr_t heap_end = 0;
 
 #define OOM_STR "Out of memory\n"
 caddr_t _sbrk(int incr) {
-    static caddr_t heap_end;
     caddr_t prev_heap_end;
 
     if (heap_end == 0)

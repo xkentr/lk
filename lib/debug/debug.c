@@ -24,6 +24,7 @@
 #include <ctype.h>
 #include <debug.h>
 #include <stdlib.h>
+#include <malloc.h>
 #include <stdio.h>
 #include <list.h>
 #include <string.h>
@@ -108,6 +109,7 @@ static int cmd_fill_mem(int argc, const cmd_args *argv);
 static int cmd_reset(int argc, const cmd_args *argv);
 static int cmd_memtest(int argc, const cmd_args *argv);
 static int cmd_copy_mem(int argc, const cmd_args *argv);
+static int cmd_mallinfo(int argc, const cmd_args *argv);
 
 STATIC_COMMAND_START
 #if DEBUGLEVEL > 0
@@ -121,6 +123,7 @@ STATIC_COMMAND_START
 	{ "fh", "fill range of memory by halfword", &cmd_fill_mem },
 	{ "fb", "fill range of memory by byte", &cmd_fill_mem },
 	{ "mc", "copy a range of memory", &cmd_copy_mem },
+	{ "mi", "show malloc stats (mallinfo)", &cmd_mallinfo },
 #endif
 #if DEBUGLEVEL > 1
 	{ "mtest", "simple memory test", &cmd_memtest },
@@ -281,6 +284,53 @@ static int cmd_copy_mem(int argc, const cmd_args *argv)
 	size_t len = argv[3].u;
 
 	memcpy((void *)target, (const void *)source, len);
+
+	return 0;
+}
+
+extern unsigned int _end;
+extern unsigned int _end_of_ram;
+extern caddr_t heap_end;
+
+static int cmd_mallinfo(int argc, const cmd_args *argv)
+{
+    int heap_low = (int)&_end;
+	int heap_hi = (int)&_end_of_ram;
+	int heap_sbrk = (int)heap_end;
+	int heapsz = heap_hi - heap_low;
+	int heapalloc = heap_sbrk - heap_low;
+
+	/* size of available heap */
+	printf("heapsz = %d\n", heapsz);
+
+	/* amount that has been sbrked */
+	printf("heapalloc = %d\n", heapalloc);
+
+	// KR - the code below crashes, not sure why yet.
+#if 0
+	struct mallinfo info = mallinfo();
+
+	/* total space allocated from system */
+	printf("arena = %d\n", info.arena);
+
+	/* number of non-inuse chunks */
+	printf("ordblks = %d\n", info.ordblks);
+
+	/* number of mmapped regions */
+	printf("hblks = %d\n", info.hblks);
+
+	/* total space in mmapped regions */
+	printf("hblkhd = %d\n", info.hblkhd);
+
+	/* total allocated space */
+	printf("uordblks = %d\n", info.uordblks);
+
+	/* total non-inuse space */
+	printf("fordblks = %d\n", info.fordblks);
+
+	/* top-most, releasable (via malloc_trim) space */
+	printf("keepcost = %d\n", info.keepcost);
+#endif
 
 	return 0;
 }
