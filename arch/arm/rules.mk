@@ -147,8 +147,7 @@ ifeq ($(TOOLCHAIN_PREFIX),arm-none-linux-gnueabi-)
 THUMBINTERWORK:=
 endif
 
-CFLAGS += $(THUMBCFLAGS) $(THUMBINTERWORK)
-LDFLAGS += $(THUMBCFLAGS) $(THUMBINTERWORK) -mcpu=cortex-m3
+LDFLAGS += -mcpu=$(ARM_CPU) $(THUMBCFLAGS) $(THUMBINTERWORK)
 
 # make sure some bits were set up
 MEMVARS_SET := 0
