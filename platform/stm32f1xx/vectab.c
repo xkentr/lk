@@ -25,6 +25,7 @@
 #include <stm32f10x.h>
 #include <platform/stm32.h>
 #include <target/debugconfig.h>
+#include <lib/cbuf.h>
 
 extern void stm32_tim2_irq(void);
 extern void stm32_tim3_irq(void);
@@ -33,12 +34,27 @@ extern void stm32_tim5_irq(void);
 extern void stm32_tim6_irq(void);
 extern void stm32_tim7_irq(void);
 
+extern void uart_rx_irq(USART_TypeDef *usart, cbuf_t *rxbuf);
+#ifdef ENABLE_UART1
+extern cbuf_t uart1_rx_buf;
+#endif
+#ifdef ENABLE_UART2
+extern cbuf_t uart2_rx_buf;
+#endif
+#ifdef ENABLE_UART3
+extern cbuf_t uart3_rx_buf;
+#endif
+
 void stm32_USART1_IRQ(void)
 {
 	if (DEBUG_UART == USART1)
 		stm32_debug_rx_irq();
 	else
-		PANIC_UNIMPLEMENTED;
+#ifdef ENABLE_UART1
+		uart_rx_irq(USART1, &uart1_rx_buf);
+#else
+	    PANIC_UNIMPLEMENTED;
+#endif
 }
 
 void stm32_USART2_IRQ(void)
@@ -46,7 +62,11 @@ void stm32_USART2_IRQ(void)
 	if (DEBUG_UART == USART2)
 		stm32_debug_rx_irq();
 	else
-		PANIC_UNIMPLEMENTED;
+#ifdef ENABLE_UART2
+		uart_rx_irq(USART2, &uart2_rx_buf);
+#else
+	    PANIC_UNIMPLEMENTED;
+#endif
 }
 
 void stm32_USART3_IRQ(void)
@@ -54,7 +74,11 @@ void stm32_USART3_IRQ(void)
 	if (DEBUG_UART == USART3)
 		stm32_debug_rx_irq();
 	else
-		PANIC_UNIMPLEMENTED;
+#ifdef ENABLE_UART3
+		uart_rx_irq(USART3, &uart3_rx_buf);
+#else
+	    PANIC_UNIMPLEMENTED;
+#endif
 }
 
 /* appended to the end of the main vector table */

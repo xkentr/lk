@@ -21,40 +21,92 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include <string.h>
 #include <errno.h>
 #include <sys/stat.h>
 #include <sys/times.h>
 #include <sys/unistd.h>
 #include <lktypes.h>
+#include <dev/uart.h>
+
 
 #undef errno
 extern int errno;
 
+// Platform specific filenames and fds.
+static const char UART1_FNAME[] = "/dev/uart1";
+static const char UART2_FNAME[] = "/dev/uart2";
+static const char UART3_FNAME[] = "/dev/uart3";
+#define UART_FD_BASE 10
+#define UART1_FD (UART_FD_BASE+1)
+#define UART2_FD (UART_FD_BASE+2)
+#define UART3_FD (UART_FD_BASE+3)
+
 void stm32_debug_putc(char c);
 int stm32_debug_getc(char *c, bool wait);
+
+int _stat(const char *filepath, struct stat *st) {
+    st->st_mode = S_IFCHR;
+    return 0;
+}
+
+int _open (const char *name, int flags, int mode)
+{
+	if (!strncmp(name, UART1_FNAME, sizeof(UART1_FNAME)))
+		return UART1_FD;
+	else if (!strncmp(name, UART2_FNAME, sizeof(UART2_FNAME)))
+		return UART2_FD;
+	else if (!strncmp(name, UART3_FNAME, sizeof(UART3_FNAME)))
+		return UART3_FD;
+
+	errno = ENOSYS;
+	return -1;
+}
 
 int _close(int file) {
 	return -1;
 }
 
-int _read(int file, char *ptr, int len) {
-    int n;
-    int num = 0;
-	char c;
-    switch (file) {
-    case STDIN_FILENO:
-        for (n = 0; n < len; n++) {
-			stm32_debug_getc(&c, true);
-            *ptr++ = c;
-            num++;
-        }
+static void read_uart(int port, char *ptr, int len)
+{
+	int n;
+	for (n = 0; n < len; n++)
+		*ptr++ = uart_getc(port, true);
 
-        break;
-    default:
-        errno = EBADF;
-        return -1;
-    }
-    return num;
+}
+
+int _read(int file, char *ptr, int len) {
+	int n;
+	char c;
+	switch (file) {
+	case STDIN_FILENO:
+		for (n = 0; n < len; n++) {
+			stm32_debug_getc(&c, true);
+			*ptr++ = c;
+		}
+
+		break;
+	case UART1_FD:
+		read_uart(1, ptr, len);
+		break;
+	case UART2_FD:
+		read_uart(2, ptr, len);
+		break;
+	case UART3_FD:
+		read_uart(3, ptr, len);
+		break;
+	default:
+		errno = EBADF;
+		return -1;
+	}
+	return len;
+}
+
+static void write_uart(int port, char *ptr, int len)
+{
+	int n;
+	for (n = 0; n < len; n++)
+		uart_putc(port, *ptr++);
 }
 
 int _write(int file, char *ptr, int len) {
@@ -66,6 +118,15 @@ int _write(int file, char *ptr, int len) {
 			stm32_debug_putc(*ptr++);
 
         break;
+	case UART1_FD:
+		write_uart(1, ptr, len);
+		break;
+	case UART2_FD:
+		write_uart(2, ptr, len);
+		break;
+	case UART3_FD:
+		write_uart(3, ptr, len);
+		break;
     default:
         errno = EBADF;
         return -1;
