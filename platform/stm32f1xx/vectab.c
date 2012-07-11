@@ -47,37 +47,28 @@ extern cbuf_t uart3_rx_buf;
 
 void stm32_USART1_IRQ(void)
 {
-	if (DEBUG_UART == USART1)
-		stm32_debug_rx_irq();
-	else
 #ifdef ENABLE_UART1
-		uart_rx_irq(USART1, &uart1_rx_buf);
+	uart_rx_irq(USART1, &uart1_rx_buf);
 #else
-	    PANIC_UNIMPLEMENTED;
+	PANIC_UNIMPLEMENTED;
 #endif
 }
 
 void stm32_USART2_IRQ(void)
 {
-	if (DEBUG_UART == USART2)
-		stm32_debug_rx_irq();
-	else
 #ifdef ENABLE_UART2
-		uart_rx_irq(USART2, &uart2_rx_buf);
+	uart_rx_irq(USART2, &uart2_rx_buf);
 #else
-	    PANIC_UNIMPLEMENTED;
+	PANIC_UNIMPLEMENTED;
 #endif
 }
 
 void stm32_USART3_IRQ(void)
 {
-	if (DEBUG_UART == USART3)
-		stm32_debug_rx_irq();
-	else
 #ifdef ENABLE_UART3
-		uart_rx_irq(USART3, &uart3_rx_buf);
+	uart_rx_irq(USART3, &uart3_rx_buf);
 #else
-	    PANIC_UNIMPLEMENTED;
+	PANIC_UNIMPLEMENTED;
 #endif
 }
 
