@@ -29,6 +29,7 @@
 #include <sys/unistd.h>
 
 #include <kernel/thread.h>
+#include <debug.h>
 
 #undef errno
 extern int errno;
@@ -70,6 +71,18 @@ void __malloc_unlock(struct _reent *_r)
 	exit_critical_section();
 }
 
-void _exit(int status) {
+void _exit(int status)
+{
     thread_exit(status);
+}
+
+int _getpid(void)
+{
+	return (int)current_thread;
+}
+
+int _kill(int pid, int sig) {
+	dprintf(ALWAYS, "Kill called on pid %d with sig %d\n", pid, sig);
+	thread_exit(1);
+	return -1;
 }
