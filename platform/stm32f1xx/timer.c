@@ -23,6 +23,7 @@
 #include <debug.h>
 #include <err.h>
 #include <sys/types.h>
+#include <sys/time.h>
 #include <kernel/thread.h>
 #include <platform.h>
 #include <platform/timer.h>
@@ -36,7 +37,7 @@
 #define TIME_BASE_COUNT 0xffff
 #define TICK_RATE 1000000
 
-static volatile uint64_t ticks = 0;
+static volatile time_t ticks = 0;
 
 static platform_timer_callback cb;
 static void *cb_args;
@@ -142,6 +143,17 @@ bigtime_t current_time_hires(void)
 	count1 /= clk_mhz;
 
 	return tusec + count1;
+}
+
+int _gettimeofday(struct timeval *tm, void *tz)
+{
+	time_t hsec = ticks;
+	if (tm) {
+		tm->tv_sec = hsec / 100;
+		tm->tv_sec = (hsec % 100) * 10000;
+	}
+
+	return 0;
 }
 
 void stm32_timer_early_init(void)
