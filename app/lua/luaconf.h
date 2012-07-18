@@ -220,7 +220,7 @@
 ** (A format string with one argument is enough for Lua...)
 */
 #define luai_writestringerror(s,p) \
-	(fprintf(stderr, (s), (p)), fflush(stderr))
+	(fiprintf(stderr, (s), (p)), fflush(stderr))
 
 
 /*
@@ -354,9 +354,9 @@
 ** space (and to reserve some numbers for pseudo-indices).
 */
 #if LUAI_BITSINT >= 32
-#define LUAI_MAXSTACK		1000000
+#define LUAI_MAXSTACK		4096
 #else
-#define LUAI_MAXSTACK		15000
+#define LUAI_MAXSTACK		4096
 #endif
 
 /* reserve some space for error handling */
@@ -369,7 +369,7 @@
 @@ LUAL_BUFFERSIZE is the buffer size used by the lauxlib buffer system.
 ** CHANGE it if it uses too much C-stack space.
 */
-#define LUAL_BUFFERSIZE		BUFSIZ
+#define LUAL_BUFFERSIZE 128
 
 
 
@@ -383,14 +383,14 @@
 ** ===================================================================
 */
 
-#define LUA_NUMBER_DOUBLE
-#define LUA_NUMBER	double
+//#define LUA_NUMBER_DOUBLE
+#define LUA_NUMBER	int
 
 /*
 @@ LUAI_UACNUMBER is the result of an 'usual argument conversion'
 @* over a number.
 */
-#define LUAI_UACNUMBER	double
+#define LUAI_UACNUMBER	int
 
 
 /*
@@ -399,10 +399,10 @@
 @@ lua_number2str converts a number to a string.
 @@ LUAI_MAXNUMBER2STR is maximum size of previous conversion.
 */
-#define LUA_NUMBER_SCAN		"%lf"
-#define LUA_NUMBER_FMT		"%.14g"
-#define lua_number2str(s,n)	sprintf((s), LUA_NUMBER_FMT, (n))
-#define LUAI_MAXNUMBER2STR	32 /* 16 digits, sign, point, and \0 */
+#define LUA_NUMBER_SCAN		"%d"
+#define LUA_NUMBER_FMT		"%d"
+#define lua_number2str(s,n)	siprintf((s), LUA_NUMBER_FMT, (n))
+#define LUAI_MAXNUMBER2STR	16 /* 10 digits, sign, and \0 */
 
 
 /*
@@ -413,12 +413,8 @@
 ** systems, you can leave 'lua_strx2number' undefined and Lua will
 ** provide its own implementation.
 */
-#define lua_str2number(s,p)	strtod((s), (p))
-
-#if defined(LUA_USE_STRTODHEX)
-#define lua_strx2number(s,p)	strtod((s), (p))
-#endif
-
+#define lua_str2number(s,p)	strtol((s), (p), 0)
+#define lua_strx2number(s,p)	strtol((s), (p), 0)
 
 /*
 @@ The luai_num* macros define the primitive operations over numbers.
@@ -426,9 +422,15 @@
 
 /* the following operations need the math library */
 #if defined(lobject_c) || defined(lvm_c)
-#include <math.h>
-#define luai_nummod(L,a,b)	((a) - floor((a)/(b))*(b))
-#define luai_numpow(L,a,b)	(pow(a,b))
+// TIP - don't use a^b in your lua code.
+static inline int ipow(int a, int b) {
+	int r = 1;
+	while (b-- > 0)
+		r *= a;
+	return r;
+}
+#define luai_nummod(L,a,b)	((a)%(b))
+#define luai_numpow(L,a,b)	(ipow(a,b))
 #endif
 
 /* these are quite standard operations */
@@ -540,7 +542,11 @@
 ** without modifying the main part of the file.
 */
 
+// lobject.c wants to use sprintf.
+#define lua_sprintf siprintf
 
+// This macro is defined in llimits.h to use floating point.
+#define luai_hashnum(i,n) do { n=i; } while (0)
 
 #endif
 
