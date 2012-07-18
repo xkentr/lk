@@ -44,7 +44,7 @@ ASMFLAGS := -DASSEMBLY
 LDFLAGS := 
 
 CFLAGS += -ffunction-sections -fdata-sections
-LDFLAGS += -gc-sections -Wl,-Map,$(OUTELF).map
+LDFLAGS += -Wl,-gc-sections -Wl,-Map,$(OUTELF).map
 
 # top level rule
 all:: $(OUTBIN) $(OUTELF).lst $(OUTELF).debug.lst $(OUTELF).sym $(OUTELF).size

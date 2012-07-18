@@ -10,7 +10,7 @@ SECTIONS
 	.text.boot.vectab1 : { KEEP(*(.text.boot.vectab1)) }
 	.text.boot.vectab2 : { KEEP(*(.text.boot.vectab2)) }
 	.text.boot : { KEEP(*(.text.boot)) }
-	.text :	{ *(.text .text.* .glue_7* .gnu.linkonce.t.* .eh_frame) } =0x9090
+	.text :	{ *(.text .text.* .glue_7* .gnu.linkonce.t.* .eh_frame) }
 
 	.interp : { *(.interp) }
 	.hash : { *(.hash) }
@@ -36,7 +36,7 @@ SECTIONS
 	.rela.bss : { *(.rela.bss) }
 	.rel.plt : { *(.rel.plt) }
 	.rela.plt : { *(.rela.plt) }
-	.init : { *(.init) } =0x9090
+	.init : { *(.init) }
 	.plt : { *(.plt) }
 
 	/* .ARM.exidx is sorted, so has to go in its own output section.  */
@@ -46,7 +46,42 @@ SECTIONS
 
 	.rodata : {
 		*(.rodata .rodata.* .gnu.linkonce.r.*)
+
 		. = ALIGN(4);
+	    	KEEP(*(.init))
+
+	    . = ALIGN(4);
+	    __preinit_array_start = .;
+	    KEEP (*(.preinit_array))
+	    __preinit_array_end = .;
+
+	    . = ALIGN(4);
+	    __init_array_start = .;
+	    KEEP (*(SORT(.init_array.*)))
+	    KEEP (*(.init_array))
+	    __init_array_end = .;
+
+	    . = ALIGN(4);
+	    KEEP(*(.fini))
+
+	    . = ALIGN(4);
+	    __fini_array_start = .;
+	    KEEP (*(.fini_array))
+	    KEEP (*(SORT(.fini_array.*)))
+	    __fini_array_end = .;
+
+	    . = ALIGN(0x4);
+	    KEEP (*crtbegin.o(.ctors))
+	    KEEP (*(EXCLUDE_FILE (*crtend.o) .ctors))
+	    KEEP (*(SORT(.ctors.*)))
+	    KEEP (*crtend.o(.ctors))
+
+	    . = ALIGN(0x4);
+	    KEEP (*crtbegin.o(.dtors))
+	    KEEP (*(EXCLUDE_FILE (*crtend.o) .dtors))
+	    KEEP (*(SORT(.dtors.*)))
+	    KEEP (*crtend.o(.dtors))
+
 		__rodata_end = . ;
 	}
 
@@ -54,7 +89,9 @@ SECTIONS
 	__data_start_rom = .;
 	. = %MEMBASE%;
 	__data_start = .;
-	.data : AT ( ADDR (.rodata) + SIZEOF (.rodata) ) {
+	.data : AT ( ADDR (.rodata) + SIZEOF (.rodata) ){
+	    *(.got.plt) *(.got)
+		*(.shdata)
 		*(.data .data.* .gnu.linkonce.d.*)
 		. = ALIGN(4);
 		__commands_start = .;
@@ -66,22 +103,15 @@ SECTIONS
 		__apps_end = .;
 	}
 
-	__ctor_list = .;
-	.ctors : { *(.ctors) }
-	__ctor_end = .;
-	__dtor_list = .;
-	.dtors : { *(.dtors) }
-	__dtor_end = .;
-	.got : { *(.got.plt) *(.got) }
-	.dynamic : { *(.dynamic) }
-
 	__data_end = .;
 
 	/* unintialized data (in same segment as writable data) */
 	.bss.initial_stack : SUBALIGN(4) { KEEP(*(.bss.initial_stack)) }
 	.bss : SUBALIGN(4) {
 		__bss_start = .;
-		*(.bss .bss.*)
+		*(.shbss)
+		*(.bss .bss.* .gnu.linkonce.b.*)
+		*(COMMON)
 	}
 	. = ALIGN(4);
 	__bss_end = .;
