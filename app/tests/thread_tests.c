@@ -29,6 +29,8 @@
 #include <platform.h>
 #include <stdlib.h>
 
+#define printf iprintf
+
 static int sleep_thread(void *arg)
 {
 	for(;;) {

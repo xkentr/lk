@@ -36,6 +36,8 @@
 #include <kernel/timer.h>
 #include <platform.h>
 
+#define printf iprintf
+
 #if WITH_LIB_CONSOLE
 #include <lib/console.h>
 
